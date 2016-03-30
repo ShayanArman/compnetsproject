@@ -132,10 +132,9 @@ class Evolution:
 
 
 class Genome:
-    def __init__(self, evolution):
+    def __init__(self):
         self.genes = []
         self.fitness = None
-        self.evolution = evolution
 
     def init_genes(self):
         gene_dict = {}
@@ -160,8 +159,27 @@ class Genome:
                 self.genes[x] = new_index
 
     def copy_genome(self):
-        genome = Genome(self.evolution)
+        genome = Genome()
         genome.genes = self.genes
         genome.fitness = self.fitness
 
         return genome
+
+# Functional mutate function
+def func_mutate(genome):
+    """
+    genome is an array of genes: [1, 15, 18, 59]
+    its indexes are the weights to be cut.
+
+    """
+    # call all different mutates
+    genes_dict = {}
+    for gene in genome:
+        genes_dict[gene] = True
+    for x in range(len(genome)):
+        if random.random() < MUTATION_CHANCE:
+            new_index = random.randrange(NUM_EDGES)
+            while new_index in genes_dict:
+                new_index = random.randrange(NUM_EDGES)
+            genome[x] = new_index
+    return genome

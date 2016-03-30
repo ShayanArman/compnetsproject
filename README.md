@@ -23,3 +23,8 @@ child_genome = []
 The genes that are the same for both, we put in the child_genome. So in this case:
 child_genome = [10, 14], then we randomly, with the fittest function having the highest weight,
 choose the remaining genes(weight indexes) from these 2 genomes.
+
+
+Mutation:
+After the crossover, we mutate the child by looking at each index, and randomly seeing if it should be 
+mutated. If we want to change the mutation chance, change this parameter: MUTATION_CHANCE.
