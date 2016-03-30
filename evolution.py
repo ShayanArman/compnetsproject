@@ -83,10 +83,6 @@ class Evolution:
         self.evaluate_population(generation)
         return max(self.population, key=lambda genome: genome.fitness)
 
-    def new_innovation(self):
-        self.innovation_count += 1
-        return self.innovation_count
-
     def crossover(self, g1_index, g2_index):
         """
         Creates offspring from fittest genomes and
