@@ -184,6 +184,18 @@ def func_mutate(genome):
             genome[x] = new_index
     return genome
 
+def func_natural_selection(population):
+    """
+    Selects top SURVIVAL_SIZE-most fit genomes - Kills the rest
+
+    """
+    survival_size = max(1, int(SURVIVAL_PERCENT * len(population)))
+    # Population looks like [[[1,2,3,4,5,5], 1500], [[1,2,3,4,5,5], 1500], [[1,2,3,4,5,5], 1500]]
+    # Each index is an array of 2 index: genome, and fitness
+    # population[0] = [[1,2,3,4,5,5], 1500] -> genome, fitness 
+    population = sorted(population, key=lambda genome: genome[1], reverse=True)[:survival_size]
+    return population
+
 # Functional initialize genes
 def func_init_genes():
     gene_dict = {}
