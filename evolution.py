@@ -205,3 +205,44 @@ def func_init_genes():
         gene_dict[edge_index] = True
     genes = gene_dict.keys()
     return genes
+
+def func_crossover(self, g1_index, g2_index, population):
+    """
+    Creates offspring from fittest genomes and
+    mutates children to form new generation
+    """
+    # Population looks like [[[1,2,3,4,5,5], 1500], [[1,2,3,4,5,5], 1500], [[1,2,3,4,5,5], 1500]]
+    # Each index is an array of 2 index: genome, and fitness
+    # population[0] = [[1,2,3,4,5,5], 1500] -> genome, fitness 
+    g1 = population[g1_index][0]
+    g2 = population[g2_index][0]
+    desired_length = len(g1)
+
+    # Genome: genes_list, fitness which is None initially
+    genes_list = []
+    child_genome = [genes_list, None]
+    g1_copy, g2_copy = g1[:], g2[:]
+    intersect = set(g1).intersection(g2)
+
+    for val in intersect:
+        genes_list.append(val)
+
+    while len(genes_list) < desired_length:
+        rand_val = random.random()
+        if rand_val < 0.7 and len(g1_copy) > 0:
+            g1_val = g1_copy.pop()
+            while g1_val in intersect and len(g1_copy) > 0:
+                g1_val = g1_copy.pop()
+            if g1_val not in intersect:
+                genes_list.append(g1_val)
+        else:
+            g2_val = g2_copy.pop()
+            while g2_val in intersect and len(g2_copy) > 0:
+                g2_val = g2_copy.pop()
+            if g2_val not in intersect:
+                genes_list.append(g2_val)
+
+    genes_list = func_mutate(genes_list)
+    child_genome[0] = genes_list
+    population.append(child_genome)
+    return population
