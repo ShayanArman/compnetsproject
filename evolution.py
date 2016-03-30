@@ -41,7 +41,7 @@ class Evolution:
         self.population = []
         self.innovation_count = 0
         # Communication with Matlab Fitness function.
-        self.brain = None
+        self.brain = None # TODO. CONNECT WITH MATLAB
         self.gid_count = 0
 
     def initiate_population(self):
@@ -50,6 +50,7 @@ class Evolution:
             genome.init_genes()
             self.population.append(genome)
 
+    # TODO: THIS IS WHERE WE GET THE FITNESS. CONNECT WITH THE MATLAB CODE.
     def evaluate_population(self, generation):
         for genome in self.population:
             if genome.fitness is None:
