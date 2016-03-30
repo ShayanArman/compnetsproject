@@ -143,7 +143,7 @@ class Genome:
         while len(gene_dict) < num_genes:
             edge_index = random.randrange(NUM_EDGES)
             gene_dict[edge_index] = True
-        self.genes = gene_dict.keys()           
+        self.genes = gene_dict.keys()
 
     def mutate(self):
         # call all different mutates
@@ -183,3 +183,13 @@ def func_mutate(genome):
                 new_index = random.randrange(NUM_EDGES)
             genome[x] = new_index
     return genome
+
+# Functional initialize genes
+def func_init_genes():
+    gene_dict = {}
+    num_genes = int(NUM_CUTS_PERCENT * NUM_EDGES)
+    while len(gene_dict) < num_genes:
+        edge_index = random.randrange(NUM_EDGES)
+        gene_dict[edge_index] = True
+    genes = gene_dict.keys()
+    return genes
