@@ -1,8 +1,9 @@
 function neuro_project
+    tic
     clear; close all; clc;
     rng('default')
     
-    initial_train_iterations = 50;
+    initial_train_iterations = 400;
 
     [xTrainImages, tTrain] = digittrain_dataset;
     [xTestImages, tTest] = digittest_dataset;
@@ -16,39 +17,53 @@ function neuro_project
     deepLayer3 = trainSoftmaxLayer(featLayer2,tTrain,'MaxEpochs', initial_train_iterations,'ShowProgressWindow',false);
     
     deepnet = stack(deepLayer1,deepLayer2,deepLayer3);
-    trained_boosted_network.trainParam.epochs = initial_train_iterations;
-    trained_boosted_network.trainParam.showWindow = false;
+    deepnet.trainParam.epochs = initial_train_iterations;
+    deepnet.trainParam.showWindow = false;
     deepnet = train(deepnet, images2netinput(xTrainImages), tTrain);
     
-    boost_factor = 0; %Only perform cuts
-    
-    resp_degredations = 0:0.05:0.25;
-    perf_response = test_degredations(deepnet, xTrainImages, tTrain, xTestImages, tTest, resp_degredations, boost_factor, 2, 10);    
-    
-    figure
-    hold on
-    perf_response = squeeze(perf_response(:,2,:))';
-    boxplot(perf_response, 'Labels', resp_degredations)
-    xlabel('degredation percent')
-    ylabel('performance')
-    title('Instaneous Network performance after degredation, 10 iterations')
-    hold off
-    
+    boost_factor = 2; 
     
     boost_train_iterations = 50;
-    recov_degradations = [0, 0.05, 0.1, 0.5, 0.9];
-    perf_recovery = test_degredations(deepnet, xTrainImages, tTrain, xTestImages, tTest, recov_degradations, boost_factor, boost_train_iterations, 1);    
+    recov_degradations = [0, 0.01, 0.08, 0.4];
+    perf_recovery = test_degredations(deepnet, xTrainImages, tTrain, xTestImages, tTest, recov_degradations, boost_factor, boost_train_iterations, 5);    
+    
+    mean_perf_recovery = zeros(boost_train_iterations, length(recov_degradations)); 
+    max_perf_recovery =  zeros(boost_train_iterations, length(recov_degradations)); 
+    for i = 1:length(recov_degradations)
+        mean_perf_recovery(:,i) = mean(squeeze(perf_recovery(i,:,:))')';
+        max_perf_recovery(:,i) = max(squeeze(perf_recovery(i,:,:))')';
+    end
     
     figure
     hold on;
-    perf_recovery = perf_recovery';
-    plot(0 : 1 : boost_train_iterations-1, perf_recovery);
+    plot(0 : 1 : boost_train_iterations-1, mean_perf_recovery);
     legend(strread(num2str(recov_degradations),'%s'));
     xlabel('Training Iteration');
     ylabel('Performance');
-    title('Performance of various degradations over training iterations');
+    title('Mean of 10 attempts, Performance of various degradations over training iterations');
+    axis([0 boost_train_iterations 0 1])
     hold off
     
+    figure
+    hold on;
+    plot(0 : 1 : boost_train_iterations-1, max_perf_recovery);
+    legend(strread(num2str(recov_degradations),'%s'));
+    xlabel('Training Iteration');
+    ylabel('Performance');
+    title('Max of 10 attempts, Performance of various degradations over training iterations');
+    axis([0 boost_train_iterations 0 1])
+    hold off
+    
+    disp(toc);
+    disp('breakpoint');
+end
+
+%Singular float fitness variable for GA
+function [fitness] = cut_fitness(network, train_images, train_target, test_images, test_target, degrade_vector, boost_factor, train_iterations)
+    [~, perf_j] = train_with_boost(network,...
+                            train_images, train_target, test_images, test_target,...
+                            degrade_vector, boost_factor, train_iterations);
+    fitness = perf_j(train_iterations);
 end
 
 %converts images to array for input into neurons
@@ -89,12 +104,14 @@ function [trained_boosted_network, perf] = train_with_boost(network, train_data,
     trained_boosted_network.trainParam.showWindow = false;
     trainData = images2netinput(train_data);
     
-    for i = 2:iterations
-        trained_boosted_network = boost_network(trained_boosted_network, boosts, boost_factor);
+    trained_boosted_network = boost_network(trained_boosted_network, boosts, boost_factor);
+    perf(2) = network_fitness(trained_boosted_network, test_data, test_target);
+        
+    for i = 3:iterations
         trained_boosted_network = train(trained_boosted_network, trainData, train_target);
+        trained_boosted_network = boost_network(trained_boosted_network, boosts, boost_factor);
         perf(i) = network_fitness(trained_boosted_network, test_data, test_target);
     end
-    trained_boosted_network = boost_network(trained_boosted_network, boosts, boost_factor);
 end
 
 %Tests an array of degredation values, each trained for certain iterations,
