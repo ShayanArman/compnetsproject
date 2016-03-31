@@ -4,19 +4,8 @@ function neuro_project
 
     [xTrainImages, tTrain] = digittrain_dataset;
     [xTestImages, tTest] = digittest_dataset;
-
-    autoenc1 = trainAutoencoder(xTrainImages,100, 'MaxEpochs', 50, 'ShowProgressWindow',false);
-    feat1 = encode(autoenc1,xTrainImages);
-
-    autoenc2 = trainAutoencoder(feat1,50, 'MaxEpochs', 50, 'ShowProgressWindow',false);
-    feat2 = encode(autoenc2,feat1);
-
-    softnet = trainSoftmaxLayer(feat2,tTrain,'MaxEpochs', 50,'ShowProgressWindow',false);
     
-    deepnet = stack(autoenc1,autoenc2,softnet);
-    trained_boosted_network.trainParam.epochs = 50;
-    trained_boosted_network.trainParam.showWindow = false;
-    deepnet = train(deepnet, images2netinput(xTrainImages), tTrain);
+    deepnet = train_deepnet(xTrainImages, tTrain, 50);
     
     weightsBackup = getwb(deepnet);
     num_weights = length(weightsBackup);
@@ -48,6 +37,51 @@ function neuro_project
     
     testNet = degraded_net_10;
     
+    %test_cutting_time()
+end
+
+function [] = test_cutting_time()
+    perfs = zeros(2, 12);
+
+    deepnet = train_deepnet(xTrainImages, tTrain, 10);
+
+    for i=1:12   
+        weights_to_boost = randperm(num_weights, int32(0.1 * num_weights));
+        [degraded_net_10, perf] = train_with_boost(deepnet, xTrainImages, tTrain, xTestImages, tTest, weights_to_boost, boost_factor, 50);
+
+        perfs(2, i) = perf(end);
+        
+        weights_to_boost = randperm(num_weights, int32(0 * num_weights));
+        [deepnet, perf] = train_with_boost(deepnet, xTrainImages, tTrain, xTestImages, tTest, weights_to_boost, boost_factor, 10);
+    end
+    
+    perfs(1, :) = ones(size(perfs(1, :))) .* perf(end);
+    
+    figure
+    hold on
+    plot(10:10:120, perfs(1, :));
+    plot(10:10:120, perfs(2, :));
+    
+    legend('original', '10% cut')
+    xlabel('Training Iterations Before Cut')
+    ylabel('Perf of final trained iteration after cut')
+    title('Final Performance of Network after Cutting at Various Training Iterations')
+end
+
+function [deepnet] = train_deepnet(xTrainImages, tTrain, epochs)
+    autoenc1 = trainAutoencoder(xTrainImages,100, 'MaxEpochs', epochs, 'ShowProgressWindow',false);
+    feat1 = encode(autoenc1,xTrainImages);
+
+    autoenc2 = trainAutoencoder(feat1,50, 'MaxEpochs', epochs, 'ShowProgressWindow',false);
+    feat2 = encode(autoenc2,feat1);
+
+    softnet = trainSoftmaxLayer(feat2,tTrain,'MaxEpochs', epochs,'ShowProgressWindow',false);
+    
+    deepnet = stack(autoenc1,autoenc2,softnet);
+    deepnet.trainParam.epochs = epochs;
+    deepnet.trainParam.showWindow = false;
+    deepnet = train(deepnet, images2netinput(xTrainImages), tTrain);
+
 end
 
 %converts images to array for input into neurons
