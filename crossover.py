@@ -6,8 +6,9 @@ import random
 
 # Population1 [[0, 1, 2] [0, 8, 5] [0, 1, 2] [0, 8, 5]]
 # Population2 [[0, 1, 2] [0, 8, 5] [0, 1, 2] [0, 8, 5], ]
-g1 = [0, 14, 25, 10]
-g2 = [9, 10, 14, 3]
+g1 = [0, 10, 18, 25, 19, 75]
+g2 = [0, 10, 9, 33, 23, 81]
+
 desired_length = len(g1)
 
 child_genome = []
@@ -32,3 +33,5 @@ while len(child_genome) < desired_length:
             g2_val = g2_copy.pop()
         if g2_val not in intersect:
             child_genome.append(g2_val)
+
+print child_genome
