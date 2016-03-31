@@ -46,6 +46,7 @@ function neuro_project
     %test_cutting_time()
 end
 
+%generate a graph of various cutting times vs. final network performance
 function [] = test_cutting_time()
     perfs = zeros(2, 12);
 
@@ -74,6 +75,7 @@ function [] = test_cutting_time()
     title('Final Performance of Network after Cutting at Various Training Iterations')
 end
 
+%initialize and train the deepnet given data and number of epochs
 function [deepnet] = train_deepnet(xTrainImages, tTrain, epochs)
     deepLayer1 = trainAutoencoder(xTrainImages,100, 'MaxEpochs', epochs, 'ShowProgressWindow',false);
     featLayer1 = encode(deepLayer1,xTrainImages);
