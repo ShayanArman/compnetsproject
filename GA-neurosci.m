@@ -67,7 +67,6 @@ function [childFitness, childGenome] = cutoffFn(genome, cutpercent, index)
 	end
 end 
 
-
 function [childGenome] = mutate(genome)
 	min = 0
 	max = edgesNum
@@ -85,7 +84,6 @@ function [childGenome] = mutate(genome)
 		end
 		genome(k) = newI	
 	end
-
 end
 
 function [childGenome] = crossover(genomes, gIndex1, gIndex2)
@@ -103,7 +101,6 @@ function [childGenome] = crossover(genomes, gIndex1, gIndex2)
 
 	while length(geneLst) < genomeMembers
 		randVal = rand(1) 
-
 		if randVal < 0.7 & length(genomeCopy1) > 0
 			gVal1 = genomeCopy1(1)
 
@@ -114,7 +111,6 @@ function [childGenome] = crossover(genomes, gIndex1, gIndex2)
 				genesLst = [genesLst gVal1]
 			end
 		end
-
 	end
 
 	else
@@ -125,9 +121,7 @@ function [childGenome] = crossover(genomes, gIndex1, gIndex2)
 			if isMember(gVal2,GIntersect) == 0
 				genesLst = [genesLst gVal2]
 			end
-
 	end	
-
 	%need to mutate genesLst before appending
 	childGenome[0] = genesLst
 	population = [population childGenome]
