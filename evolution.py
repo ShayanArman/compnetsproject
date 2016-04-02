@@ -10,27 +10,17 @@ import pickle
 NUM_EDGES = 84060
 NUM_CUTS_PERCENT = .01
 MUTATION_CHANCE = .01
-SURVIVAL_PERCENT = 0.30
-CROSSOVER_CHANCE = 0.75
-POPULATION_SIZE = 20
+SURVIVAL_PERCENT = 0.10
+CROSSOVER_CHANCE = 0.50
+POPULATION_SIZE = 100
 MAX_GENERATIONS = 100
-
-
-# Functional initialize genes
-def gen_random_genes():
-    gene_dict = {}
-    num_genes = int(NUM_CUTS_PERCENT * NUM_EDGES)
-    while len(gene_dict) < num_genes:
-        edge_index = random.randrange(NUM_EDGES)
-        gene_dict[edge_index] = True
-    genes = gene_dict.keys()
-    return genes
+CHOOSE_FROM_FITTEST_CHANCE = 0.99
 
 
 def initiate_population(population):
-    random_genes = []
+    num_genes = int(NUM_CUTS_PERCENT * NUM_EDGES)
     for i in range(POPULATION_SIZE):
-        random_genes = gen_random_genes()
+        random_genes = random.sample(range(0, NUM_EDGES), num_genes)
         # Fitness of 0
         population.append([random_genes, 0.0])
     return population
@@ -40,9 +30,9 @@ def fitness(genes):
     score = 0.0
     for x in genes:
         if x % 2 == 0:
-            score -= 1000
+            score -= 1000000
         else:
-            score += 1000
+            score += 1000000
     return score
 
 
@@ -101,7 +91,7 @@ def mutate(genes):
             while new_index in genes_dict:
                 new_index = random.randrange(NUM_EDGES)
             genes[x] = new_index
-    return genome
+    return genes
 
 
 def crossover(g1_index, g2_index, population):
@@ -115,6 +105,9 @@ def crossover(g1_index, g2_index, population):
     # population[0] = [[1,2,3,4,5,5], 1500] -> genome, fitness
     g1 = population[g1_index][0]
     g2 = population[g2_index][0]
+    if isinstance(g1, int):
+        import pdb
+        pdb.set_trace()
     desired_length = len(g1)
 
     # Genome: genes_list, fitness which is None initially
@@ -128,7 +121,7 @@ def crossover(g1_index, g2_index, population):
 
     while len(genes_list) < desired_length:
         rand_val = random.random()
-        if rand_val < 0.7 and len(g1_copy) > 0:
+        if rand_val < CHOOSE_FROM_FITTEST_CHANCE and len(g1_copy) > 0:
             g1_val = g1_copy.pop()
             while g1_val in intersect and len(g1_copy) > 0:
                 g1_val = g1_copy.pop()
@@ -158,7 +151,7 @@ for generation in range(MAX_GENERATIONS):
         if len(population) == 1 or not (random.random() < CROSSOVER_CHANCE):
             copied_genome = copy_genome(
                 population[random.randint(0, survived_num - 1)])
-            copied_genome = mutate(copied_genome[0])
+            mutate(copied_genome[0])
             population.append(copied_genome)
         else:
             g1_index = random.randrange(0, survived_num)
