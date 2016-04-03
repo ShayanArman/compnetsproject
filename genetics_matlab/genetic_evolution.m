@@ -1,3 +1,7 @@
+clear all;
+close all;
+import neurop_project.m; %so we can call fitness function
+
 function genetic_evolution
     import Constants;
     [population, fitness] = initiate_population();
@@ -71,7 +75,8 @@ function [population, fitness] = natural_selection(population, fitness)
 function [fitness] = evaluate_population(population, fitness)
     population_size = size(population);
     for i = 1:population_size(1)
-        fitness(i) = get_fitness(population(i, :));
+        %cut_fitness = ga fitness function from neurosci_project
+        fitness(i) = cut_fitness(population(i, :));
     end
     
 function [fitness_val] = get_fitness(genome)
