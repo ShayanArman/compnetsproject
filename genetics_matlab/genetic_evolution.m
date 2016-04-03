@@ -1,5 +1,20 @@
 function genetic_evolution
     import Constants;
+    
+    global xTrainImages
+    global tTrain
+    global xTestImages
+    global tTest
+    
+    [xTrainImages, tTrain] = digittrain_dataset;
+    [xTestImages, tTest] = digittest_dataset;
+    
+    pretrained = load('weights_encmax_99.mat');
+    
+    global network
+    network = train_deepnet(xTrainImages, tTrain, 1);
+    network = setwb(network, pretrained);
+    
     [population, fitness] = initiate_population();
     for generation = 1:Constants.MAX_GENERATIONS
         fitness = evaluate_population(population, fitness);
@@ -20,8 +35,8 @@ function genetic_evolution
         end
     end
 
-    fitness = evaluate_population(population, fitness);
-    disp(num_evens(population, fitness));
+    fitness = evaluate_population(population, fitness)
+    %disp(num_evens(population, fitness));
     % Crossover tests.
     % cats = [];
     % cats(1, :) = randperm(10, 5);
@@ -75,16 +90,18 @@ function [fitness] = evaluate_population(population, fitness)
     end
     
 function [fitness_val] = get_fitness(genome)
-    genome_size = size(genome);
-    score = 0.0;
-    for j = 1:genome_size(2)
-        if mod(genome(j), 2) == 0
-            score = score + 10000;
-        else
-            score = score - 10000;
-        end
-    end
-    fitness_val = score;
+%     genome_size = size(genome);
+%     score = 0.0;
+%     for j = 1:genome_size(2)
+%         if mod(genome(j), 2) == 0
+%             score = score + 10000;
+%         else
+%             score = score - 10000;
+%         end
+%     end
+%     fitness_val = score;
+
+    cut_fitness(network, xTrainImages, tTrain, xTestImages, tTest, genome, 0, 1);
 
 function [population, fitness] = crossover(g1_index, g2_index, population, fitness)
     g1 = population(g1_index, :);
