@@ -1,8 +1,27 @@
 function genetic_evolution
     import Constants;
     [population, fitness] = initiate_population();
+    for generation = 1:Constants.MAX_GENERATIONS
+        fitness = evaluate_population(population, fitness);
+        % Keep only the best performing genomes.
+        [population, fitness] = natural_selection(population, fitness);
+        survived_num = size(population, 1);
+
+        while size(population, 1) < Constants.POPULATION_SIZE
+            if size(population, 1) == 1 || rand(1) > Constants.CROSSOVER_CHANCE
+                genome_index = max(1, int8(rand(1)*survived_num));
+                copied_genome = [];
+                copied_genome(:, :) = population(genome_index, :);
+            else
+                g1_index = max(1, int8(rand(1)*survived_num));
+                g2_index = max(1, int8(rand(1)*survived_num));
+                [population, fitness] = crossover(g1_index, g2_index, population, fitness);
+            end
+        end
+    end
+
     fitness = evaluate_population(population, fitness);
-    [population, fitness] = natural_selection(population, fitness);
+    disp(num_evens(population, fitness));
     % Crossover tests.
     % cats = [];
     % cats(1, :) = randperm(10, 5);
@@ -16,6 +35,16 @@ function [population, fitness] = initiate_population()
     for i =1:Constants.POPULATION_SIZE
         population(i, :) = randperm(Constants.NUM_EDGES, num_weights_cut);
         fitness(i) = 0.0;
+    end
+
+function [evens_count] = num_evens(population, fitness)
+    [population, fitness] = sort_two_vectors(population, fitness);
+    genome = population(1, :);
+    evens_count = 0.0;
+    for i =1:size(genome, 2)
+        if mod(genome(1, i), 2) == 0
+            evens_count = evens_count + 1;
+        end
     end
 
 function [genome] = mutate(genome)
@@ -50,9 +79,9 @@ function [fitness_val] = get_fitness(genome)
     score = 0.0;
     for j = 1:genome_size(2)
         if mod(genome(j), 2) == 0
-            score = score + 10000;
-        else
             score = score - 10000;
+        else
+            score = score + 10000;
         end
     end
     fitness_val = score;
