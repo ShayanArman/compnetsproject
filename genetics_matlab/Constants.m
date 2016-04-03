@@ -6,7 +6,7 @@ classdef Constants
         SURVIVAL_PERCENT = 0.30;
         CROSSOVER_CHANCE = 0.75;
         POPULATION_SIZE = 20;
-        MAX_GENERATIONS = 100;
+        MAX_GENERATIONS = 10;
         CHOOSE_FROM_FITTEST_CHANCE = 0.01; 
     end
 end
