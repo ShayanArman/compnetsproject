@@ -79,9 +79,9 @@ function [fitness_val] = get_fitness(genome)
     score = 0.0;
     for j = 1:genome_size(2)
         if mod(genome(j), 2) == 0
-            score = score - 10000;
-        else
             score = score + 10000;
+        else
+            score = score - 10000;
         end
     end
     fitness_val = score;
@@ -119,8 +119,6 @@ function [population, fitness] = crossover(g1_index, g2_index, population, fitne
     genes_list = mutate(genes_list);
     population(size(population, 1) + 1, :) = genes_list;
     fitness(:, size(fitness, 2) + 1) = 0.0;
-    disp(population);
-    disp(fitness);
 
 function [population, fitness] = sort_two_vectors(population, fitness)
     [fit_sorted, indices] = sort(fitness, 'descend');
