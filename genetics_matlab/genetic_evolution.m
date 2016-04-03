@@ -3,7 +3,10 @@ function genetic_evolution
     [population, fitness] = initiate_population();
     fitness = evaluate_population(population, fitness);
     [population, fitness] = natural_selection(population, fitness);
-    crossover(2, 4, population, fitness);
+    cats = [];
+    cats(1, :) = randperm(10, 5);
+    cats(2, :) = randperm(10, 5);
+    crossover(1, 2, cats, fitness);
 
 function [population, fitness] = initiate_population()
     num_weights_cut = max(1, floor(Constants.NUM_EDGES * Constants.NUM_CUTS_PERCENT));
@@ -56,16 +59,34 @@ function [fitness_val] = get_fitness(genome)
 function [population, fitness] = crossover(g1_index, g2_index, population, fitness)
     g1 = population(g1_index, :);
     g2 = population(g2_index, :);
-    g1_size = size(g1);
-    desired_length = g1_size(2);
+    desired_length = size(g1, 2);
 
     genes_list = [];
     g1_copy = g1(:, :);
     g2_copy = g2(:, :);
     intersect_g1_g2 = intersect(g1, g2);
-    intersect_size = size(intersect_g1_g2);
+    possible_g1 = setdiff(g1, intersect_g1_g2);
+    possible_g2 = setdiff(g2, intersect_g1_g2);
     genes_list(:, :) = intersect_g1_g2(:, :);
-    
+
+    while size(genes_list, 2) < desired_length
+        if rand(1) < Constants.CHOOSE_FROM_FITTEST_CHANCE && size(possible_g1, 2) > 0
+            genes_list(size(genes_list, 2) + 1) = possible_g1(1);
+            if size(possible_g1, 2) > 1
+                possible_g1 = possible_g1(2:end);
+            else
+                possible_g1 = [];
+            end
+        elseif size(possible_g2, 2) > 0
+            genes_list(1, size(genes_list, 2) + 1) = possible_g2(1);
+            if size(possible_g2, 2) > 1
+                possible_g2 = possible_g2(2:end);
+            else
+                possible_g2 = [];
+            end
+        end
+    end
+
 function [population, fitness] = sort_two_vectors(population, fitness)
     [fit_sorted, indices] = sort(fitness, 'descend');
     fitness = fit_sorted;
