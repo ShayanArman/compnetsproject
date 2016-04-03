@@ -3,8 +3,7 @@ function genetic_evolution
     [population, fitness] = initiate_population();
     fitness = evaluate_population(population, fitness);
     [population, fitness] = natural_selection(population, fitness);
-    disp(size(population));
-    disp(size(fitness));
+    crossover(2, 4, population, fitness);
 
 function [population, fitness] = initiate_population()
     num_weights_cut = max(1, floor(Constants.NUM_EDGES * Constants.NUM_CUTS_PERCENT));
@@ -53,7 +52,20 @@ function [fitness_val] = get_fitness(genome)
         end
     end
     fitness_val = score;
-        
+
+function [population, fitness] = crossover(g1_index, g2_index, population, fitness)
+    g1 = population(g1_index, :);
+    g2 = population(g2_index, :);
+    g1_size = size(g1);
+    desired_length = g1_size(2);
+
+    genes_list = [];
+    g1_copy = g1(:, :);
+    g2_copy = g2(:, :);
+    intersect_g1_g2 = intersect(g1, g2);
+    intersect_size = size(intersect_g1_g2);
+    genes_list(:, :) = intersect_g1_g2(:, :);
+    
 function [population, fitness] = sort_two_vectors(population, fitness)
     [fit_sorted, indices] = sort(fitness, 'descend');
     fitness = fit_sorted;
