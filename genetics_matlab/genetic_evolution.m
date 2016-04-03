@@ -1,10 +1,22 @@
+function genetic_evolution
+    import Constants;
+    num_weights_cut = max(1, floor(Constants.NUM_EDGES * Constants.NUM_CUTS_PERCENT));
+    population = [];
+    fitness = [];
+    for i =1:Constants.POPULATION_SIZE
+        population(i, :) = randperm(Constants.NUM_EDGES, num_weights_cut);
+        fitness(i) = 0.0;
+    end
+    population, fitness = evaluate_population(population, fitness);
+    disp(population(1,:));
+    disp(fitness(1));
+
 function [genome] = mutate(genome)
-	import Constants;
     len_genome = size(genome);
     max = Constants.NUM_EDGES;
 	for k = 1:len_genome(2)
 		randVal = rand(1); %1 value random generator
-		if randVal < 0.5
+		if randVal < Constants.MUTATION_CHANCE
 			newI = floor(randVal*max);
 			while ismember(newI, genome)
 				newI = floor(rand(1)*max);
@@ -12,8 +24,6 @@ function [genome] = mutate(genome)
 			genome(k) = newI;
         end
     end
-    sprintf('%d ', genome);
-    disp(get_fitness(genome));
 
 function [population, fitness] = natural_selection(population, fitness)
     population_size = size(population);
