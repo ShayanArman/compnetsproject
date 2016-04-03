@@ -3,10 +3,11 @@ function genetic_evolution
     [population, fitness] = initiate_population();
     fitness = evaluate_population(population, fitness);
     [population, fitness] = natural_selection(population, fitness);
-    cats = [];
-    cats(1, :) = randperm(10, 5);
-    cats(2, :) = randperm(10, 5);
-    crossover(1, 2, cats, fitness);
+    % Crossover tests.
+    % cats = [];
+    % cats(1, :) = randperm(10, 5);
+    % cats(2, :) = randperm(10, 5);
+    % crossover(1, 2, cats, fitness);
 
 function [population, fitness] = initiate_population()
     num_weights_cut = max(1, floor(Constants.NUM_EDGES * Constants.NUM_CUTS_PERCENT));
@@ -20,7 +21,7 @@ function [population, fitness] = initiate_population()
 function [genome] = mutate(genome)
     len_genome = size(genome);
     max = Constants.NUM_EDGES;
-	for k = 1:len_genome(2)
+	for k = 1:size(genome, 2)
 		randVal = rand(1); %1 value random generator
 		if randVal < Constants.MUTATION_CHANCE
 			newI = floor(randVal*max);
@@ -86,6 +87,11 @@ function [population, fitness] = crossover(g1_index, g2_index, population, fitne
             end
         end
     end
+    genes_list = mutate(genes_list);
+    population(size(population, 1) + 1, :) = genes_list;
+    fitness(:, size(fitness, 2) + 1) = 0.0;
+    disp(population);
+    disp(fitness);
 
 function [population, fitness] = sort_two_vectors(population, fitness)
     [fit_sorted, indices] = sort(fitness, 'descend');
