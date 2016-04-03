@@ -10,19 +10,8 @@ survivalRate = 0.1;
 crossRate = 0.75;
 maxIter = 100;
 
-%mutation constants
-weightMut = 0.99;
-connectionMut = 0.25;
-linkMut = 1.5;
-biasMut = 0.4;
-nodeMut = 0.5;
-
-w_Step = 0.1;
-maxNodes = 100000;
-output = 4;
 popSize = 20;
 maxGen = 100;
-maxFitness = 110; %need to decide from mayank matlab fn
 
 %initializing population = genomes + fitnes
 %need to define genes (size of weights matrix) and randomize
@@ -68,21 +57,15 @@ function [childFitness, childGenome] = cutoffFn(genome, cutpercent, index)
 end 
 
 function [childGenome] = mutate(genome)
-	min = 0
 	max = edgesNum
-	%random permutation of weight/gene dropoff
-	randW = [zeros(1, edgesNum), ones(1, edgesNum)]
-	randW = randW(randperm(2*N))
-
 	for k = 1:size(genome)
 		randVal = rand(1) %1 value random generator
 		if randval < mutPercent
-			newI = min+rand(1)*(max-min)
-		end
-		while ismember(randval, genome)
-			newI = min+rand(1)*(max-min)
-		end
-		genome(k) = newI	
+			newI = randVal*max
+			while ismember(randval, genome)
+				newI = rand(1)*max
+			end
+			genome(k) = newI
 	end
 end
 
@@ -134,5 +117,5 @@ survivalSelec = length(population) %post selection number of individuals
 %plotting fitness + genomes for examining diff permutations vs fitness
 figure;
 hold on;
-plot(population, fitness)
+plot(population, fitness);
 

@@ -11,10 +11,10 @@ NUM_EDGES = 84060
 NUM_CUTS_PERCENT = .01
 MUTATION_CHANCE = .01
 SURVIVAL_PERCENT = 0.10
-CROSSOVER_CHANCE = 0.50
+CROSSOVER_CHANCE = 0.70
 POPULATION_SIZE = 100
 MAX_GENERATIONS = 100
-CHOOSE_FROM_FITTEST_CHANCE = 0.99
+CHOOSE_FROM_FITTEST_CHANCE = 0.70
 
 
 def initiate_population(population):
@@ -48,9 +48,8 @@ def number_of_evens(genes):
 def evaluate_population(population):
     for genome in population:
         # genome -> [genes, fitness]
-        if genome[1] == 0:
-            # TODO call mayanks function here for fitness(genome[0])
-            genome[1] = fitness(genome[0])
+        # TODO call mayanks function here for fitness(genome[0])
+        genome[1] = fitness(genome[0])
     return population
 
 
@@ -105,9 +104,6 @@ def crossover(g1_index, g2_index, population):
     # population[0] = [[1,2,3,4,5,5], 1500] -> genome, fitness
     g1 = population[g1_index][0]
     g2 = population[g2_index][0]
-    if isinstance(g1, int):
-        import pdb
-        pdb.set_trace()
     desired_length = len(g1)
 
     # Genome: genes_list, fitness which is None initially
