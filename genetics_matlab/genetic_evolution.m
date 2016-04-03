@@ -135,6 +135,3 @@ figure;
 hold on;
 %plot(population, fitness)
 
-
-
-
