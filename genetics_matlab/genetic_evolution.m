@@ -1,5 +1,11 @@
 function genetic_evolution
     import Constants;
+    population, fitness = initiate_population();
+    population, fitness = evaluate_population(population, fitness);
+    disp(population(1,:));
+    disp(fitness(1));
+
+function [population, fitness] = initiate_population()
     num_weights_cut = max(1, floor(Constants.NUM_EDGES * Constants.NUM_CUTS_PERCENT));
     population = [];
     fitness = [];
@@ -7,9 +13,6 @@ function genetic_evolution
         population(i, :) = randperm(Constants.NUM_EDGES, num_weights_cut);
         fitness(i) = 0.0;
     end
-    population, fitness = evaluate_population(population, fitness);
-    disp(population(1,:));
-    disp(fitness(1));
 
 function [genome] = mutate(genome)
     len_genome = size(genome);
