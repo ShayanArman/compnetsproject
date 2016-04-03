@@ -1,6 +1,6 @@
 clear all;
 close all;
-import neurop_project.m; %so we can call fitness function
+import neurop_project.m; %to call fitness function.
 
 function genetic_evolution
     import Constants;
