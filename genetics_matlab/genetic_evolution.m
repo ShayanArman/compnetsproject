@@ -1,9 +1,12 @@
 function genetic_evolution
     import Constants;
-    population, fitness = initiate_population();
-    population, fitness = evaluate_population(population, fitness);
+    [population, fitness] = initiate_population();
+    fitness = evaluate_population(population, fitness);
     disp(population(1,:));
     disp(fitness(1));
+    [population, fitness] = natural_selection(population, fitness);
+    disp(size(population));
+    disp(fitness(1:6));
 
 function [population, fitness] = initiate_population()
     num_weights_cut = max(1, floor(Constants.NUM_EDGES * Constants.NUM_CUTS_PERCENT));
@@ -31,9 +34,12 @@ function [genome] = mutate(genome)
 function [population, fitness] = natural_selection(population, fitness)
     population_size = size(population);
     survival_size = max(1, floor(Constants.SURVIVAL_PERCENT * population_size(1)));
-    population, fitness = sort_two_vectors(population, fitness);
-    population = population(1:survival_size, :, :);
-    fitness = fitness(1:survival_size, :, :);
+    disp(survival_size);
+    [population, fitness] = sort_two_vectors(population, fitness);
+    disp(size(fitness));
+    disp(size(population));
+    population = population(1:survival_size, :);
+    fitness = fitness(1:survival_size, :);
 
 function [fitness] = evaluate_population(population, fitness)
     population_size = size(population);
@@ -56,4 +62,4 @@ function [fitness_val] = get_fitness(genome)
 function [population, fitness] = sort_two_vectors(population, fitness)
     [fit_sorted, indices] = sort(fitness, 'descend');
     fitness = fit_sorted;
-    population = population(indices, :, :);
+    population = population(indices, :);
