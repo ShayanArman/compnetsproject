@@ -3,9 +3,10 @@ function [disturbed_net, perf] = train_persistent_disturbance(net, x, t, epochs,
     perf = zeros(epochs, 1);
     disturbed_net = disturbance(net);
     disturbed_net.trainParam.epochs = 1;
+    disturbed_net.trainParam.showWindow = false;
     for i = 1:epochs
         perf(i) = perf_func(disturbed_net);
-        disturbed_net = train(disturbed_net, x, t, 'useParallel','yes', 'UseGPU','yes');
+        disturbed_net = train(disturbed_net, x, t);
         disturbed_net = disturbance(disturbed_net);
     end
 end
