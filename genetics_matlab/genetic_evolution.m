@@ -1,9 +1,17 @@
-clear all;
-close all;
-import neurop_project.m; %to call fitness function.
-
 function genetic_evolution
     import Constants;
+    
+    global xTrainImages tTrain xTestImages tTest network
+    
+    [xTrainImages, tTrain] = digittrain_dataset;
+    [xTestImages, tTest] = digittest_dataset;
+    
+    pretrained = load('weights_encmax_99.mat');
+    pretrained = pretrained.weights_encmax_99;
+    
+    network = train_deepnet(xTrainImages, tTrain, 50);
+    %network = setwb(network, pretrained);
+    
     [population, fitness] = initiate_population();
     for generation = 1:Constants.MAX_GENERATIONS
         fitness = evaluate_population(population, fitness);
@@ -24,8 +32,8 @@ function genetic_evolution
         end
     end
 
-    fitness = evaluate_population(population, fitness);
-    disp(num_evens(population, fitness));
+    fitness = evaluate_population(population, fitness)
+    %disp(num_evens(population, fitness));
     % Crossover tests.
     % cats = [];
     % cats(1, :) = randperm(10, 5);
@@ -57,9 +65,9 @@ function [genome] = mutate(genome)
 	for k = 1:size(genome, 2)
 		randVal = rand(1); %1 value random generator
 		if randVal < Constants.MUTATION_CHANCE
-			newI = floor(randVal*max);
+			newI = floor(randVal*(max-1)) + 1;
 			while ismember(newI, genome)
-				newI = floor(rand(1)*max);
+				newI = floor(rand(1)*(max-1)) + 1;
 			end
 			genome(k) = newI;
         end
@@ -76,20 +84,22 @@ function [fitness] = evaluate_population(population, fitness)
     population_size = size(population);
     for i = 1:population_size(1)
         %cut_fitness = ga fitness function from neurosci_project
-        fitness(i) = cut_fitness(population(i, :));
+        fitness(i) = get_fitness(population(i, :));
     end
     
 function [fitness_val] = get_fitness(genome)
-    genome_size = size(genome);
-    score = 0.0;
-    for j = 1:genome_size(2)
-        if mod(genome(j), 2) == 0
-            score = score + 10000;
-        else
-            score = score - 10000;
-        end
-    end
-    fitness_val = score;
+%     genome_size = size(genome);
+%     score = 0.0;
+%     for j = 1:genome_size(2)
+%         if mod(genome(j), 2) == 0
+%             score = score + 10000;
+%         else
+%             score = score - 10000;
+%         end
+%     end
+%     fitness_val = score;
+    global xTrainImages tTrain xTestImages tTest network
+    fitness_val = cut_fitness(network, xTrainImages, tTrain, xTestImages, tTest, genome, 0, 20)
 
 function [population, fitness] = crossover(g1_index, g2_index, population, fitness)
     g1 = population(g1_index, :);

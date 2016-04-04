@@ -1,3 +1,4 @@
+function GA_neurosci
 % Genome evolution:
 close all
 clear all
@@ -48,6 +49,18 @@ end
 
 %gene fitness cut off
 cutoff = round(cutPercent*genomes);
+
+%function calls down here
+population = cutoffFn(population)
+survivalSelec = length(population) %post selection number of individuals
+
+%plotting fitness + genomes for examining diff permutations vs fitness
+figure;
+hold on;
+plot(population, fitness)
+end
+
+
 %define cutoff function AKA natural selection function
 function [childFitness, childGenome] = cutoffFn(genome, cutpercent, index)
 	for j = 1:cutoff
@@ -57,15 +70,15 @@ function [childFitness, childGenome] = cutoffFn(genome, cutpercent, index)
 end 
 
 function [childGenome] = mutate(genome)
-	max = edgesNum
+	max = edgesNum;
 	for k = 1:size(genome)
-		randVal = rand(1) %1 value random generator
-		if randval < mutPercent
-			newI = randVal*max
-			while ismember(randval, genome)
-				newI = rand(1)*max
+		randVal = rand(1); %1 value random generator
+		if randVal < mutPercent
+			newI = randVal*max;
+			while ismember(randVal, genome)
+				newI = rand(1)*max;
 			end
-			genome(k) = newI
+			genome(k) = newI;
 	end
 end
 
@@ -75,47 +88,39 @@ function [childGenome] = crossover(genomes, gIndex1, gIndex2)
 	genomeMembers = len(genome1);
 
 	genesLst = [];
-	childGenome = [genesLst] %members of genes after selection
-	childFitness = [] %empty list of fitnesses
-	genomeCopy1 = genome1
-	genomeCopy2 = genome2
+	childGenome = [genesLst]; %members of genes after selection
+	childFitness = []; %empty list of fitnesses
+	genomeCopy1 = genome1;
+	genomeCopy2 = genome2;
 
-	GIntersect = intersection(genomeCopy1, genomeCopy2)
+	GIntersect = intersection(genomeCopy1, genomeCopy2);
 
 	while length(geneLst) < genomeMembers
-		randVal = rand(1) 
-		if randVal < 0.7 & length(genomeCopy1) > 0
+		randVal = rand(1); 
+		if randVal < 0.7 && length(genomeCopy1) > 0
 			gVal1 = genomeCopy1(1)
 
 			while ismember(gVal1, GIntersect)
-				gVal1 = genomeCopy1(1)
+				gVal1 = genomeCopy1(1);
 			end
 			if isMember(gVal1,GIntersect) == 0
-				genesLst = [genesLst gVal1]
+				genesLst = [genesLst gVal1];
 			end
-		end
-	end
 
-	else
-		g2Val = genomeCopy2(1)
-		while ismember(gVal2, GIntersect)
-				gVal2 = genomeCopy2(1)
-			end
-			if isMember(gVal2,GIntersect) == 0
-				genesLst = [genesLst gVal2]
-			end
-	end	
+        else
+            g2Val = genomeCopy2(1)
+            while ismember(gVal2, GIntersect)
+                    gVal2 = genomeCopy2(1)
+                end
+                if isMember(gVal2,GIntersect) == 0
+                    genesLst = [genesLst gVal2]
+                end
+            end	
+    	end
+
 	%need to mutate genesLst before appending
 	childGenome[0] = genesLst
 	population = [population childGenome]
 end
 
-%function calls down here
-population = cuttofFn(population)
-survivalSelec = length(population) %post selection number of individuals
-
-%plotting fitness + genomes for examining diff permutations vs fitness
-figure;
-hold on;
-plot(population, fitness);
 
