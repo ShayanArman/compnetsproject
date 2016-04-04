@@ -1,4 +1,5 @@
 function genetic_evolution
+    close all;
     import Constants;
     
     global xTrainImages tTrain xTestImages tTest network
@@ -11,7 +12,6 @@ function genetic_evolution
     
     network = train_deepnet(xTrainImages, tTrain, Constants.INITIAL_ITERATIONS);
     %network = setwb(network, pretrained);
-    
     [population, fitness] = initiate_population();
     fitness_generations = [];
 
@@ -39,6 +39,8 @@ function genetic_evolution
     fitness_generations = [fitness_generations mean(fitness)];
     figure
     plot(fitness_generations)
+    [final_net, ~] = train_with_boost(network, xTrainImages, tTrain, xTestImages, tTest, population(1, :), 0, 1);
+    plot_network(final_net);
     %disp(num_evens(population, fitness));
     % Crossover tests.
     % cats = [];
