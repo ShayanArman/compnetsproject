@@ -139,3 +139,9 @@ function [population, fitness] = sort_two_vectors(population, fitness)
     [fit_sorted, indices] = sort(fitness, 'descend');
     fitness = fit_sorted;
     population = population(indices, :);
+
+%plotting figures:
+figure;
+hold on;
+%plot(population, fitness)
+
