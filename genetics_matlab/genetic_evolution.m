@@ -1,19 +1,16 @@
 function genetic_evolution
     import Constants;
     
-    global xTrainImages
-    global tTrain
-    global xTestImages
-    global tTest
+    global xTrainImages tTrain xTestImages tTest network
     
     [xTrainImages, tTrain] = digittrain_dataset;
     [xTestImages, tTest] = digittest_dataset;
     
     pretrained = load('weights_encmax_99.mat');
+    pretrained = pretrained.weights_encmax_99;
     
-    global network
-    network = train_deepnet(xTrainImages, tTrain, 1);
-    network = setwb(network, pretrained);
+    network = train_deepnet(xTrainImages, tTrain, 50);
+    %network = setwb(network, pretrained);
     
     [population, fitness] = initiate_population();
     for generation = 1:Constants.MAX_GENERATIONS
@@ -68,9 +65,9 @@ function [genome] = mutate(genome)
 	for k = 1:size(genome, 2)
 		randVal = rand(1); %1 value random generator
 		if randVal < Constants.MUTATION_CHANCE
-			newI = floor(randVal*max);
+			newI = floor(randVal*(max-1)) + 1;
 			while ismember(newI, genome)
-				newI = floor(rand(1)*max);
+				newI = floor(rand(1)*(max-1)) + 1;
 			end
 			genome(k) = newI;
         end
@@ -100,8 +97,8 @@ function [fitness_val] = get_fitness(genome)
 %         end
 %     end
 %     fitness_val = score;
-
-    cut_fitness(network, xTrainImages, tTrain, xTestImages, tTest, genome, 0, 1);
+    global xTrainImages tTrain xTestImages tTest network
+    fitness_val = cut_fitness(network, xTrainImages, tTrain, xTestImages, tTest, genome, 0, 20)
 
 function [population, fitness] = crossover(g1_index, g2_index, population, fitness)
     g1 = population(g1_index, :);
