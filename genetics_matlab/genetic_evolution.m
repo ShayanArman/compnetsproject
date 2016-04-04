@@ -9,12 +9,15 @@ function genetic_evolution
     pretrained = load('weights_encmax_99.mat');
     pretrained = pretrained.weights_encmax_99;
     
-    network = train_deepnet(xTrainImages, tTrain, 50);
+    network = train_deepnet(xTrainImages, tTrain, Constants.INITIAL_ITERATIONS);
     %network = setwb(network, pretrained);
     
     [population, fitness] = initiate_population();
+    fitness_generations = [];
+
     for generation = 1:Constants.MAX_GENERATIONS
         fitness = evaluate_population(population, fitness);
+        fitness_generations = [fitness_generations mean(fitness)];
         % Keep only the best performing genomes.
         [population, fitness] = natural_selection(population, fitness);
         survived_num = size(population, 1);
@@ -33,6 +36,9 @@ function genetic_evolution
     end
 
     fitness = evaluate_population(population, fitness)
+    fitness_generations = [fitness_generations mean(fitness)];
+    figure
+    plot(fitness_generations)
     %disp(num_evens(population, fitness));
     % Crossover tests.
     % cats = [];
@@ -99,7 +105,7 @@ function [fitness_val] = get_fitness(genome)
 %     end
 %     fitness_val = score;
     global xTrainImages tTrain xTestImages tTest network
-    fitness_val = cut_fitness(network, xTrainImages, tTrain, xTestImages, tTest, genome, 0, 20)
+    fitness_val = cut_fitness(network, xTrainImages, tTrain, xTestImages, tTest, genome, 0, Constants.RECOVERY_ITERATIONS);
 
 function [population, fitness] = crossover(g1_index, g2_index, population, fitness)
     g1 = population(g1_index, :);

@@ -12,8 +12,5 @@ function [deepnet] = train_deepnet(xTrainImages, tTrain, epochs)
     deepnet.trainParam.epochs = epochs;
     deepnet.trainParam.showWindow = false;
     deepnet = train(deepnet, images2netinput(xTrainImages), tTrain);
-    
-    disp(toc);
-    disp('breakpoint');
 end
 
