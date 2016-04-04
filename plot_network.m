@@ -1,6 +1,6 @@
 function [ ] = plot_network( network )
-    %PLOT_NETWORK Summary of this function goes here
-    %   Detailed explanation goes here
+    %Plot the network as an undirected graph, showing the 
+    %connections that were CUT
     num_inputs = 784;
     num_layer_1 = 100;
     num_layer_2 = 50;
