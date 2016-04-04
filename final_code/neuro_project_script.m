@@ -1,6 +1,5 @@
 %% Setup Workspace
 clear; close all; clc; rng(0);
-tic;
 
 %% Setup Training and Testing Data
 inputSize = 784;
@@ -11,6 +10,7 @@ xTest =  reshape(cell2mat(xTestImages), inputSize, length(xTestImages));
 perf_func = @(this_net) net_perf_incorrect(this_net, xTest, tTest);
 
 %% Create, Train, and Plot perofmrance offi Initial Network
+tic;
 net = untrained_enc_enc_soft_net(xTrain(:,1), tTrain(:,1));
 num_weights = length(getwb(net));
 
@@ -40,7 +40,7 @@ figure(1);
 title('Error of original network vs training iteration');
 hold on;
 axis([0 max(epochs) 0 1]);
-plot(epochs, perf_train, 'b--') 
+plot(epochs, perf_train, 'b--')
 plot(epochs, perf_test, 'r');
 legend('training performance','testing performance');
 xlabel('training iteration');
@@ -60,7 +60,7 @@ d_perf_mean = zeros(length(disturbances), recover_epochs);
 d_perf_best = zeros(length(disturbances), recover_epochs);
 
 d_ind = 1;
-d_perf_0 = perf_func(net); 
+d_perf_0 = perf_func(net);
 for d = disturbances;
     this_perf = zeros(attempts, recover_epochs);
     for i = 1:attempts
@@ -68,7 +68,7 @@ for d = disturbances;
         cut_weights = randperm(num_weights, int32(d * num_weights));
         cut_func = @(net) multiply_disturbance(net, cut_weights, 0);
         [dist_net, this_perf_attempt] = train_persistent_disturbance(dist_net,...
-                                        xTrain,tTrain, recover_epochs, cut_func, perf_func);
+            xTrain,tTrain, recover_epochs, cut_func, perf_func);
         this_perf(i, :) = this_perf_attempt;
         
         disp('section two progess')
@@ -111,7 +111,7 @@ for s = 1:train_iterations;
         cut_weights = randperm(num_weights, int32(disturbance * num_weights));
         cut_func = @(this_net) multiply_disturbance(this_net, cut_weights, 0);
         [dist_net, this_perf_attempt] = train_persistent_disturbance(dist_net,...
-                                        xTrain,tTrain, recover_epochs, cut_func, perf_func);
+            xTrain,tTrain, recover_epochs, cut_func, perf_func);
         this_perf(i, :) = this_perf_attempt;
         
         disp('section three progess')
@@ -127,9 +127,13 @@ hold on
 plot(0:recover_epochs, s_perf_mean(1,:), 'r--');
 plot(0:recover_epochs, s_perf_mean(2,:), 'g--');
 plot(0:recover_epochs, s_perf_mean(3,:), 'b--');
+plot(0:recover_epochs, s_perf_mean(4,:), 'k--');
+plot(0:recover_epochs, s_perf_mean(5,:), 'm--');
 plot(0:recover_epochs, s_perf_best(1,:), 'r');
 plot(0:recover_epochs, s_perf_best(2,:), 'g');
 plot(0:recover_epochs, s_perf_best(3,:), 'b');
+plot(0:recover_epochs, s_perf_best(4,:), 'k');
+plot(0:recover_epochs, s_perf_best(5,:), 'm');
 legend([strread(num2str(perf_test),'%s');strread(num2str(perf_test),'%s')]);
 xlabel('recovery iteration');
 ylabel('percentage of misclassified digits');
@@ -138,5 +142,47 @@ axis([0 recover_epochs 0 1]);
 disp('section three complete')
 disp(toc)
 
-%% Genetic search for best cut based on 
+%% Genetic search for best cut based on instant performance
+tic
+disturbance = 0.3;
+genome_size = int32(disturbance * num_weights);
+population_size = 20;
+max_generations = 10;
+fitness_recovery_epoch = 10;
+mutation_rate = .02;
+survival_rate = 0.40;
+crossover_rate = 0.8;
 
+population = initiate_population(num_weights, genome_size, population_size);
+gen_fitness = zeros(max_generations, population_size);
+
+genome_fitness_instant = @(genome) perf_func(multiply_disturbance(net, genome, 0));
+genome_fitness_recover = @(genome) perf_func(train_persistent_disturbance(net,...
+    xTrain, tTrain, fitness_recovery_epoch, ...
+    @(this_net) multiply_disturbance(this_net, genome, 0), perf_func));
+
+for g = 1:max_generations
+    fitness = pop_fitness(population, genome_fitness_instant);
+    gen_fitness(g, :) = fitness;
+    
+    [population, fitness] = selection(population, fitness, survival_rate);
+    survived_num = size(population, 1);
+    
+    while size(population, 1) < population_size
+        if size(population, 1) == 1 || rand(1) > crossover_rate;
+            genome_index = randperm(survived_num, 1);
+            new_genome = population(genome_index, :);
+        else
+            parents_idx = randperm(survived_num, 2);
+            new_genome = crossover(population(parents_idx(1),:), population(parents_idx(2),:),...
+                fitness(parents_idx(1)), fitness(parents_idx(2)));
+        end
+        new_genome = mutate(new_genome, mutation_rate, num_weights);
+        population(size(population, 1) + 1, :) = new_genome;
+    end
+    disp('section four progress');
+    disp(g / max_generations);
+end
+
+disp('section four complete');
+disp(toc)
