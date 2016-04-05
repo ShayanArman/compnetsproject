@@ -47,8 +47,11 @@ xlabel('training iteration');
 ylabel('percentage of misclassified digits');
 hold off;
 
-disp('section one complete')
+disp('section one complete in')
 disp(toc)
+
+disp('total network performance at iteration')
+disp([epoch_step+max_epoch 1-perf_func(net)])
 
 %% Test and Plot impact of randomly permuted cuts by percentage of weights
 tic
@@ -146,24 +149,33 @@ disp(toc)
 tic
 disturbance = 0.3;
 genome_size = int32(disturbance * num_weights);
-population_size = 20;
-max_generations = 10;
+population_size = 30;
+max_generations = 20;
 fitness_recovery_epoch = 10;
 mutation_rate = .02;
-survival_rate = 0.40;
-crossover_rate = 0.8;
-
-population = initiate_population(num_weights, genome_size, population_size);
-gen_fitness = zeros(max_generations, population_size);
+survival_rate = 0.60;
+crossover_rate = 0.75;
 
 genome_fitness_instant = @(genome) perf_func(multiply_disturbance(net, genome, 0));
+genome_fitness_reverse = @(genome) 1 - perf_func(multiply_disturbance(net, genome, 0));
 genome_fitness_recover = @(genome) perf_func(train_persistent_disturbance(net,...
     xTrain, tTrain, fitness_recovery_epoch, ...
     @(this_net) multiply_disturbance(this_net, genome, 0), perf_func));
+use_fitness = genome_fitness_reverse;
+
+population = initiate_population(num_weights, genome_size, population_size);
+gen_fitness = zeros(max_generations, population_size);
+gen_population = cell(max_generations, population_size);
+unique_population = zeros(max_generations, 1);
+percent_cuts_population = zeros(max_generations, 3);
 
 for g = 1:max_generations
-    fitness = pop_fitness(population, genome_fitness_instant);
+    fitness = pop_fitness(population, use_fitness); 
     gen_fitness(g, :) = fitness;
+    gen_population(g, :) = mat2cell(population, ones(population_size,1), genome_size)';
+    unique_population(g) = length(unique(population));
+    [c1, c2, c3] = percentage_layer_cuts(population');
+    percent_cuts_population(g, :) = [mean(c1) mean(c2) mean(c3)];
     
     [population, fitness] = selection(population, fitness, survival_rate);
     survived_num = size(population, 1);
@@ -183,6 +195,37 @@ for g = 1:max_generations
     disp('section four progress');
     disp(g / max_generations);
 end
+
+mean_gen_fitness = mean(gen_fitness');
+best_gen_fitness = min(gen_fitness');
+
+figure(4)
+hold on
+plot(1:max_generations, mean_gen_fitness, 'k--')
+plot(1:max_generations, best_gen_fitness, 'k')
+axis([1 max_generations 0 0.5])
+title('Population fitness over generations')
+xlabel('Generation')
+ylabel('Error rate')
+legend('mean genome error','best genome error')
+
+figure(5)
+hold on
+plot(1:max_generations, percent_cuts_population)
+legend('layer 1','layer 2','layer 3')
+title('concentration of disturbances by layer')
+xlabel('generation')
+ylabel('% of layer cut')
+
+figure(6)
+hold on
+plot(1:max_generations, unique_population)
+axis([1 max_generations 0 num_weights])
+plot([1 max_generations], [genome_size genome_size], 'r--')
+title('Number of total unique weights by generation')
+xlabel('Generation')
+ylabel('# of unique weight cuts over the population')
+legend('population uniqueness','genome size, minimum uniqueness')
 
 disp('section four complete');
 disp(toc)
