@@ -57,7 +57,7 @@ disp([epoch_step+max_epoch 1-perf_func(net)])
 tic
 disturbances = [0.02, 0.15, 0.4, 0.8];
 attempts = 4;
-recover_epochs = 50;
+recover_epochs = 200;
 
 d_perf_mean = zeros(length(disturbances), recover_epochs);
 d_perf_best = zeros(length(disturbances), recover_epochs);
@@ -74,7 +74,7 @@ for d = disturbances;
             xTrain,tTrain, recover_epochs, cut_func, perf_func);
         this_perf(i, :) = this_perf_attempt;
         
-        disp('section two progess')
+        disp('section two  progess')
         disp(((d_ind - 1)*attempts + i) / (length(disturbances)*attempts));
     end
     d_perf_mean(d_ind,:) = mean(this_perf);
@@ -88,9 +88,13 @@ hold on
 plot(0:recover_epochs, [d_perf_0 d_perf_mean(1,:)], 'r--');
 plot(0:recover_epochs, [d_perf_0 d_perf_mean(2,:)], 'g--');
 plot(0:recover_epochs, [d_perf_0 d_perf_mean(3,:)], 'b--');
+plot(0:recover_epochs, [d_perf_0 d_perf_mean(4,:)], 'm--');
+
 plot(0:recover_epochs, [d_perf_0 d_perf_best(1,:)], 'r');
 plot(0:recover_epochs, [d_perf_0 d_perf_best(2,:)], 'g');
 plot(0:recover_epochs, [d_perf_0 d_perf_best(3,:)], 'b');
+plot(0:recover_epochs, [d_perf_0 d_perf_mean(4,:)], 'm');
+
 legend([strread(num2str(disturbances),'%s');strread(num2str(disturbances),'%s')]);
 xlabel('recovery iteration');
 ylabel('percentage of misclassified digits');
@@ -229,3 +233,76 @@ legend('population uniqueness','genome size, minimum uniqueness')
 
 disp('section four complete');
 disp(toc)
+
+%% Genetic result comparing fully random weight cuts with layer 1 only
+population_l1 = initiate_population(784*100, genome_size, population_size);
+
+gen_fitness_l1 = zeros(max_generations, population_size);
+
+
+for g = 1:max_generations
+    fitness = pop_fitness(population_l1, genome_fitness_instant);
+    gen_fitness_l1(g, :) = fitness;
+    
+    [population_l1, fitness] = selection(population_l1, fitness, survival_rate);
+    survived_num = size(population_l1, 1);
+    
+    while size(population_l1, 1) < population_size
+        if size(population_l1, 1) == 1 || rand(1) > crossover_rate;
+            genome_index = randperm(survived_num, 1);
+            new_genome = population_l1(genome_index, :);
+        else
+            parents_idx = randperm(survived_num, 2);
+            new_genome = crossover(population_l1(parents_idx(1),:), population_l1(parents_idx(2),:),...
+                fitness(parents_idx(1)), fitness(parents_idx(2)));
+        end
+        new_genome = mutate(new_genome, mutation_rate, num_weights);
+        population_l1(size(population_l1, 1) + 1, :) = new_genome;
+    end
+    disp('section four progress');
+    disp(g / max_generations);
+end
+ 
+figure(5)
+hold on
+y_gen = zeros(max_generations, 1);
+y_gen_l1 = zeros(max_generations, 1);
+
+for i=1:max_generations
+    y_gen(i, 1) = mean(gen_fitness(i, :));
+    y_gen_l1(i, 1) = mean(gen_fitness_l1(i, :));
+end
+
+plot(y_gen);
+plot(y_gen_l1);
+title('Fitness of fully random cuts vs. first layer only')
+xlabel('Iteration #')
+ylabel('Error')
+legend('Fully Random', 'First Layer Only');
+
+%% Compare GA training time with 30% cuts to initial training time
+
+
+% NOTE THIS DOESN'T SEEM TO WORK YET, not sure why
+net_copy = untrained_enc_enc_soft_net(xTrain(:,1), tTrain(:,1));
+net_copy.trainParam.epochs = 1;
+net_copy.trainParam.showWindow = false;
+
+[ga_net, ga_perf] = train_persistent_disturbance(net_copy,...
+    xTrain, tTrain, 300, ...
+    @(this_net) multiply_disturbance(this_net, population(1, :), 0), perf_func);
+
+net_perf = zeros(size(ga_perf));
+for i=1:length(ga_perf)
+    net_perf(i) = perf_func(net_copy);
+    net_copy = train(net_copy,xTrain,tTrain);
+end
+
+figure(6)
+hold on
+plot(net_perf)
+plot(ga_perf)
+title('Training progess of original net vs. GA cut net')
+xlabel('Training Iteration')
+ylabel('% Misclassified Digits')
+legend('Original Network', 'GA Cut Network');
