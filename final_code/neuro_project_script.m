@@ -235,10 +235,8 @@ disp('section four complete');
 disp(toc)
 
 %% Genetic result comparing fully random weight cuts with layer 1 only
-population_l1 = initiate_population(784*100, genome_size, population_size);
-
+population_l1 = initiate_population(78500, genome_size, population_size);
 gen_fitness_l1 = zeros(max_generations, population_size);
-
 
 for g = 1:max_generations
     fitness = pop_fitness(population_l1, genome_fitness_instant);
@@ -259,50 +257,22 @@ for g = 1:max_generations
         new_genome = mutate(new_genome, mutation_rate, num_weights);
         population_l1(size(population_l1, 1) + 1, :) = new_genome;
     end
-    disp('section four progress');
+    disp('section five progress');
     disp(g / max_generations);
 end
- 
-figure(5)
-hold on
+
 y_gen = zeros(max_generations, 1);
 y_gen_l1 = zeros(max_generations, 1);
-
 for i=1:max_generations
     y_gen(i, 1) = mean(gen_fitness(i, :));
     y_gen_l1(i, 1) = mean(gen_fitness_l1(i, :));
 end
 
+figure(7)
+hold on
 plot(y_gen);
 plot(y_gen_l1);
 title('Fitness of fully random cuts vs. first layer only')
 xlabel('Iteration #')
 ylabel('Error')
 legend('Fully Random', 'First Layer Only');
-
-%% Compare GA training time with 30% cuts to initial training time
-
-
-% NOTE THIS DOESN'T SEEM TO WORK YET, not sure why
-net_copy = untrained_enc_enc_soft_net(xTrain(:,1), tTrain(:,1));
-net_copy.trainParam.epochs = 1;
-net_copy.trainParam.showWindow = false;
-
-[ga_net, ga_perf] = train_persistent_disturbance(net_copy,...
-    xTrain, tTrain, 300, ...
-    @(this_net) multiply_disturbance(this_net, population(1, :), 0), perf_func);
-
-net_perf = zeros(size(ga_perf));
-for i=1:length(ga_perf)
-    net_perf(i) = perf_func(net_copy);
-    net_copy = train(net_copy,xTrain,tTrain);
-end
-
-figure(6)
-hold on
-plot(net_perf)
-plot(ga_perf)
-title('Training progess of original net vs. GA cut net')
-xlabel('Training Iteration')
-ylabel('% Misclassified Digits')
-legend('Original Network', 'GA Cut Network');
